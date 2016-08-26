@@ -1,0 +1,9 @@
+Package: sccpM
+Type: Package
+Title: self-contained and competitive pathway-based methos
+Version: 1.0
+Date: 2016-04-01
+Author: Shailesh Tripathi, Frank Emmert-Streib
+Maintainer: Shailesh Tripathi <shailesh.tripathy@gmail.com>
+Description: Package provides functionalities to anayze gene-expression data
+License: BSD

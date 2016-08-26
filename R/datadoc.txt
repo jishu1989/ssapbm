@@ -1,0 +1,28 @@
+#library(biobase)
+#library(GEOquery)
+#library(hgu95av2.db)
+#library(affy)
+#data url http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS2545
+#sample counts:  metastatic prostate tumor- 25
+#		 normal prostate adjacent to tumor- 63 
+#                normal prostate tissue- 18            
+#		 primary prostate tumor- 65
+#gds858 <- getGEO(filename='~/Downloads/GDS2545_full.soft.gz')
+#fl <- paste("/Users/shailesh/Downloads/GSE6919_RAW/", gds858@dataTable@columns[,1],".CEL",sep="")
+#fl <- paste("/Users/shailesh/Downloads/GSE6919_RAW/", as.vector(ref$sample),".CEL",sep="")
+#dat <- ReadAffy(filenames=fl)
+#normdatx <- exprs(rma(dat))
+#pathways <- list()
+#for(i in 1:length(xx)){
+#        gen <- xx[[i]]
+#        intx <- intersect(gen, pth)
+#        pathways[[i]] <- intx
+#}
+#lnx <- sapply(pathways, length)
+#names(pathways) <- names(xx)
+#p1 <- which(lnx>4)
+#pathways <- pathways[p1]
+
+#lnx <- sapply(pathways, length)
+#p1 <- which(lnx<=500)
+#pathways <- pathways[p1] 
