@@ -20,33 +20,31 @@ ssapbm <- function(data=NULL, pathways=NULL, ref=NULL, minp=2, maxp=9999,method=
 	 	if(!is.null(sample.size)){
 			
 			pvl <- subsampanalysis(data, cls1, cls2, pathways, B=100, steps, sample.size=sample.size, method="sumoftsq", sampling=sampling[1],rep=rep, rn=rownames(TP),dc=dc,thr=thr)
-			pvtmp <- c()
-			for(m in 1:length(pvl)){
-				pvtmp <- cbind(pvtmp, pvl[[m]])
-			}
-			pvl <- pvtmp
-			rm(pvtmp)
+			#pvtmp <- c()
+			#for(m in 1:length(pvl)){
+			#	pvtmp <- cbind(pvtmp, pvl[[m]])
+			#}
+			#pvl <- pvtmp
+			#rm(pvtmp)
 		}	 
 		if(fdr){
-			print("hi")
-			print(fdr.method)
 			fdr.tp <- p.adjust(TP[,"pval"], method=fdr.method)
 		}
 	
 	}
 	if(method[1]=="ht2"){
-		TP <- pval.htsq(data, cls1, cls2,pathways=pathways, shrinkage=shrinkage, perm=perm, sampling=sampling[1], steps=B)
+		TP <- pval.htsq(data, cls1, cls2,pathways=pathways, perm=perm, sampling=sampling[1], steps=B)
 	 	TP <- cbind(TP[[1]],TP[[2]])
 		colnames(TP) <- c("ht2","pval")
 		if(!is.null(sample.size)){
 			
-			pvl <- subsampanalysis(data, cls1, cls2, pathways, B=100, steps, sample.size=sample.size, method="sumoftsq", sampling=sampling[1],rep=rep, shrinkage=shrinkage, rn=rownames(TP), dc=dc,thr=thr)
-			pvtmp <- c()
-			for(m in 1:length(pvl)){
-				pvtmp <- cbind(pvtmp, pvl[[m]])
-			}
-			pvl <- pvtmp
-			rm(pvtmp)
+			pvl <- subsampanalysis(data, cls1, cls2, pathways, B=100, steps, sample.size=sample.size, method="sumoftsq", sampling=sampling[1],rep=rep,  rn=rownames(TP), dc=dc,thr=thr)
+			#pvtmp <- c()
+			#for(m in 1:length(pvl)){
+			#	pvtmp <- cbind(pvtmp, pvl[[m]])
+			#}
+			#pvl <- pvtmp
+			#rm(pvtmp)
 			#pvl <- as.matrix(as.data.frame(pvl))
 		}	 
 		if(fdr){
@@ -81,15 +79,18 @@ ssapbm <- function(data=NULL, pathways=NULL, ref=NULL, minp=2, maxp=9999,method=
 		lp<- sapply(pathways, length)
 		lp <- c(min(lp), max(lp))
 		print(head(data))
-		pvl1 <- gage(data, gsets = pathways, ref = cls1, samp = cls2, compare = "unpaired", set.size=c(lp[1],lp[2]))
-		pvl1 <- lapply(pvl1[1:2], function(x)x[,1:5])
-		pvx <- lapply(pvl1[1:2], function(x)x[,"p.val"])
-		pvx <- cbind(pvx[[1]], pvx[[2]][names(pvx[[1]])], names(pvx[[1]]))
+		pvl1 <- gage(data, gsets = pathways, ref = cls1, samp = cls2, compare = "unpaired", set.size=c(lp[1],lp[2]), same.dir=FALSE)
+		#pvl1 <- lapply(pvl1[1:2], function(x)x[,1:5])
+		#pvx <- lapply(pvl1[1:2], function(x)x[,"p.val"])
+		#pvx <- cbind(pvx[[1]], pvx[[2]][names(pvx[[1]])], names(pvx[[1]]))
 		#tx <- apply(pvx,1,which.min)
-		tx <- t(apply(pvx,1,function(x)c(which.min(as.numeric(x[1:2])),x[3])))		
-		TP <- t(apply(tx,1, function(x)pvl1[[as.numeric(x[1])]][x[2],]))
-		TP <- TP[,2:4]
+		#tx <- t(apply(pvx,1,function(x)c(which.min(as.numeric(x[1:2])),x[3])))		
+		#TP <- t(apply(tx,1, function(x)pvl1[[as.numeric(x[1])]][x[2],]))
+		TP <- pvl1[[1]][,2:4]
 		colnames(TP) <- c("stat.mean", "pval", "fdr.tp")
+		if(fdr){
+                        fdr.tp <- p.adjust(TP[,"pval"], method=fdr.method)
+                }
 		if(!is.null(sample.size)){
 
                 	pvl <- subsampanalysis(data, cls1, cls2, pathways, B=100, steps, sample.size=sample.size, method="GAGE",dc=dc,thr=thr)
@@ -140,7 +141,7 @@ ssapbm <- function(data=NULL, pathways=NULL, ref=NULL, minp=2, maxp=9999,method=
 		
 	#}
 }
-subsampanalysis <- function(data, cls1, cls2, pathways, B=100, steps, sample.size=NULL, method=NULL, rep=F, sampling=NULL, shrinkage=T, rn=NULL, fdr="BH", dc=T, thr=0.05){
+subsampanalysis <- function(data, cls1, cls2, pathways, B=100, steps, sample.size=NULL, method=NULL, rep=F, sampling=NULL, rn=NULL, fdr="BH", dc=T, thr=0.05){
 	plist <- list()
 	dcall <- list()
 	for(i in 1:length(sample.size)){
@@ -153,10 +154,10 @@ subsampanalysis <- function(data, cls1, cls2, pathways, B=100, steps, sample.siz
 			smp2 <- sample(cls2, sample.size[i], rep=rep)
 			if(method=="sumoftsq"){
 				tmp <- p.squared.t.test(data[,c(smp1,smp2)], c(1:length(smp1)), c((length(smp1)+1):(length(smp2)+length(smp1))), steps=B, sampling=sampling[1], pathways=pathways) 
-				pvec <- cbind(pvec, tmp)
+				pvec <- cbind(pvec, tmp[names(pathways),"pval"])
 			}
 			if(method=="ht2"){
-				tmp <- pval.htsq(data[,c(smp1,smp2)], c(1:length(smp1)), c((length(smp1)+1):(length(smp2)+length(smp1))), steps=B, sampling=sampling, perm=perm, shrinkage=shrinkage)
+				tmp <- pval.htsq(data[,c(smp1,smp2)], c(1:length(smp1)), c((length(smp1)+1):(length(smp2)+length(smp1))), steps=B, sampling=sampling, perm=perm)
 				pvec <- cbind(pvec, tmp[[2]])
 			}
 			if(method=="GSEA"){
@@ -177,13 +178,14 @@ subsampanalysis <- function(data, cls1, cls2, pathways, B=100, steps, sample.siz
 			if(method=="GAGE"){
 				print(c(1:length(smp1)))
 				print(head(data[,c(smp1,smp2)]))
-				pvl <- gage(data[,c(smp1,smp2)], gsets = pathways, ref = c(1:length(smp1)), samp = c((length(smp1)+1):(length(smp1)+length(smp2))), compare = "unpaired", set.size=c(2, 9999))
-                		pvl <- lapply(pvl[1:2], function(x)x[,1:5])
-                		pvx <- lapply(pvl[1:2], function(x)x[,"p.val"])
-                		pvx <- cbind(pvx[[1]], pvx[[2]][names(pvx[[1]])], names(pvx[[1]]))
-                		tx <- t(apply(pvx,1,function(x)c(which.min(as.numeric(x[1:2])),x[3])))
-                		pvn <- t(apply(tx,1, function(x)pvl[[as.numeric(x[1])]][x[2],]))
-				pvec <- cbind(pvec, pvn[names(pathways),"p.val"])
+				pvl <- gage(data[,c(smp1,smp2)], gsets = pathways, ref = c(1:length(smp1)), samp = c((length(smp1)+1):(length(smp1)+length(smp2))), compare = "unpaired", set.size=c(2, 9999),same.dir=FALSE)
+                		pvn <- pvl[[1]][,"p.val"]
+				#pvl <- lapply(pvl[1:2], function(x)x[,1:5])
+                		#pvx <- lapply(pvl[1:2], function(x)x[,"p.val"])
+                		#pvx <- cbind(pvx[[1]], pvx[[2]][names(pvx[[1]])], names(pvx[[1]]))
+                		#tx <- t(apply(pvx,1,function(x)c(which.min(as.numeric(x[1:2])),x[3])))
+                		#pvn <- t(apply(tx,1, function(x)pvl[[as.numeric(x[1])]][x[2],]))
+				pvec <- cbind(pvec, pvn[names(pathways)])
 				
 			}
 			if(method=="GSA"){
@@ -236,6 +238,7 @@ powerpath <- function(x, type="pval"){
 	#}
 	for(i in 1:resampval){
 		p <- x[[2]][[i]]
+		#p <- apply(p, 2)
 		p <- apply(p,2,function(x)p.adjust(x,method=fdr))
 		ptmp <- apply(p,2,function(x){m<- rep(0, length(x));m[which(x<=thr)]<-1;m})
 		rownames(ptmp) <- rownames(p)
@@ -317,6 +320,7 @@ plot.ssapbm <- function(xx, data, type=c("power","fdr","fpr","tpr","dc","cor"), 
 				xtst$dcall <- as.numeric(as.vector(xtst$dcall))
 				print(xtst)	
 				gdc <- ggplot(dftr, aes(x=Pathways, y=DC,fill=Pathways)) + geom_boxplot()+xlab(paste("Pathways","(sample: ",names(dcv)[i],")",sep=""))+ylab("Detection Call")+theme(legend.position="none") +  theme(axis.text.x=element_blank())
+				gdc <- gdc + scale_x_discrete(limits=pth)
 				gdc <- gdc +geom_point(data=xtst,aes(x=Pathways, y=dcall, colour = factor(type,labels="Overall detection call")),shape=5, size=2, fill="red")+ ylim(min(c(xtst$dcall,dftr$DC)), max(c(xtst$dcall,dftr$DC)))+theme(legend.title=element_blank())
 				#}
 				#else{
@@ -332,9 +336,15 @@ plot.ssapbm <- function(xx, data, type=c("power","fdr","fpr","tpr","dc","cor"), 
 			crdat[xx$sigpath, "sig"] <- 1
 			crdat$sig <- as.factor(crdat$sig)
 			p1 <-  ggplot(crdat, aes(x=rank(crall), y=crall, color=factor(sig, labels=c("Differentially expressed", "Not Differentially expressed")) ))+geom_point()+theme(legend.position="none")+ labs(color = "",x="Ordered pathways", y="Average correlation of individual pathways")
-			p2 <- ggplot(crdat, aes(x=crctrl, y=crtreat, color=sig))+geom_point()+theme(legend.position="none")
+			p2 <- ggplot(crdat, aes(x=crctrl, y=crtreat, color=factor(sig)))+geom_point()+theme(legend.position="none")+ geom_line(data=crdat,color=rgb(0,0,1,alpha=.4),size=1.5, aes(x=crctrl, y=crctrl))+ labs(color = "",x="Average correlation:\n Individual pathways (control data)", y="Average correlation: \n Individual pathways (treatment data)")
+
 			crd <- getdf(list(ctrl=crdat[xx$sigpath,2], crtreat=crdat[xx$sigpath,3]))
-			p3 <- ggplot(crd, aes(x=sample, y=stat, fill=sample))+geom_boxplot()+theme(legend.position="none")
+			print(crd)
+			p3 <- ggplot(crd, aes(x=sample, y=stat, fill=sample))+
+			geom_boxplot()+
+			scale_x_discrete(limits=c("ctrl","crtreat"),breaks=c("ctrl", "crtreat"),labels=c("Control", "Treatment")) +
+			theme(legend.position="none")
+
 			grid_arrange_shared_legend(list(p1,p2,p3),nrow=nr, ncol=nc,position=pos)
 		}	
 		if(type=="dc"){

@@ -24,7 +24,7 @@ htsq <- function(data, cls1, cls2, shrinkage=F){
 
 	list(statistic=htsqx, df1=p, df2=n1+n2-p-1, n1=n1,n2=n2)
 }
-pval.htsq <- function(data, cls1, cls2, pathways=NULL, shrinkage=F, perm=F, sampling="sample.labels", steps=100){
+pval.htsq <- function(data, cls1, cls2, pathways=NULL, shrinkage=F, perm=T, sampling="sample.labels", steps=100){
 	pval <-  tvec <- permtvec <- c()
 	tvec <- c()
 		if(!perm){

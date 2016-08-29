@@ -37,7 +37,7 @@ simdiffx <- function(d, pc=1, diff=.1){
 }
 
 m <- matrix(rnorm(80000), 2000, 40 )
-m[1:1000, 21:40] <- m[1:1000, 21:40] + .75
+m[1:1000, 21:40] <- m[1:1000, 21:40] + matrix(rnorm(1000*40,1),1000,20)
 rownames(m) <- paste("g", c(1:2000),sep="")
 pathways <- list()
 s1 <- 1
@@ -51,7 +51,7 @@ for(i in 1:40){
 	print(s2)	
 }
 gg <- GSEAx(m, ref=c(rep(1,20), rep(2,20)), pathways)
-xx <- sscmp(m, pathways, ref=c(rep(1:15)), sample.size=c(5,10,15), method="GSEA", fdr="BH")
+xx <- ssapbm(m, pathways, ref=c(rep(1:20)), sample.size=c(5,10,15), method="GSA", fdr="BH")
 tmp <- powerpath(xx, pathname=paste("p",c(1:20),sep=""))
 kk <- detectioncall(m, ref=c(rep(1,20), rep(2,20)), pathways=pathways)
 
