@@ -1,9 +1,10 @@
-Package: sccpM
+Package: ssapbm
 Type: Package
-Title: self-contained and competitive pathway-based methos
-Version: 1.0
+Title: self-contained and competitive pathway-based methos (sub sample analysis of pathway-based methods.)
+Version: 1.0.0
 Date: 2016-04-01
 Author: Shailesh Tripathi, Frank Emmert-Streib
+Depends: ggplot2,gage, GSA, samr, R (>= 3.1.0)
 Maintainer: Shailesh Tripathi <shailesh.tripathy@gmail.com>
-Description: Package provides functionalities to anayze gene-expression data
+Description: Package provides functionalities to analyze gene-expression data
 License: BSD

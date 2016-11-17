@@ -1,5 +1,5 @@
-\name{cls}
-\alias{cls}
+\name{normdat}
+\alias{normdat}
 \docType{data}
 \title{
 %%   ~~ data name/kind ... ~~
@@ -7,12 +7,13 @@
 \description{
 %%  ~~ A concise (1-5 lines) description of the dataset. ~~
 }
-\usage{data("cls")}
+\usage{data("normdat")}
 \format{
   The format is:
-List of 2
- $ phen   : chr [1:2] "ALL" "AML"
- $ class.v: num [1:48] 0 0 0 0 0 0 0 0 0 0 ...
+ num [1:12625, 1:171] 7.16 6.51 4.72 3.42 5.43 ...
+ - attr(*, "dimnames")=List of 2
+  ..$ : chr [1:12625] "100_g_at" "1000_at" "1001_at" "1002_f_at" ...
+  ..$ : chr [1:171] "GSM152804.CEL" "GSM152805.CEL" "GSM152806.CEL" "GSM152807.CEL" ...
 }
 \details{
 %%  ~~ If necessary, more details than the __description__ above ~~
@@ -24,7 +25,7 @@ List of 2
 %%  ~~ possibly secondary sources and usages ~~
 }
 \examples{
-data(cls)
-## maybe str(cls) ; plot(cls) ...
+data(normdat)
+## maybe str(normdat) ; plot(normdat) ...
 }
 \keyword{datasets}

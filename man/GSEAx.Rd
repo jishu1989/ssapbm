@@ -8,7 +8,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-GSEAx(dataset, ref = NULL, gsets, reshuffling.type = "sample.labels", nperm = 1000, weighted.score.type = 1, nom.p.val.threshold = -1, fwer.p.val.threshold = -1, fdr.q.val.threshold = 0.25, topgs = 10, adjust.FDR.q.val = T, reverse.sign = F, preproc.type = 0, random.seed = 123456, perm.type = 0, fraction = 1, replace = F, gs.size.threshold.min = 5, gs.size.threshold.max = 500, use.fast.enrichment.routine = T)
+GSEAx(dataset, ref = NULL, gsets, reshuffling.type = "sample.labels", nperm = 1000, weighted.score.type = 1, nom.p.val.threshold = -1, fwer.p.val.threshold = -1, fdr.q.val.threshold = 0.25, topgs = 10, adjust.FDR.q.val = F, reverse.sign = F, preproc.type = 0, random.seed = NULL, perm.type = 0, fraction = 1, replace = F, gs.size.threshold.min = 5, gs.size.threshold.max = 500, use.fast.enrichment.routine = T, verbose = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -72,6 +72,9 @@ GSEAx(dataset, ref = NULL, gsets, reshuffling.type = "sample.labels", nperm = 10
   \item{use.fast.enrichment.routine}{
 %%     ~~Describe \code{use.fast.enrichment.routine} here~~
 }
+  \item{verbose}{
+%%     ~~Describe \code{verbose} here~~
+}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -107,15 +110,18 @@ GSEAx(dataset, ref = NULL, gsets, reshuffling.type = "sample.labels", nperm = 10
 function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels", 
     nperm = 1000, weighted.score.type = 1, nom.p.val.threshold = -1, 
     fwer.p.val.threshold = -1, fdr.q.val.threshold = 0.25, topgs = 10, 
-    adjust.FDR.q.val = T, reverse.sign = F, preproc.type = 0, 
-    random.seed = 123456, perm.type = 0, fraction = 1, replace = F, 
-    gs.size.threshold.min = 5, gs.size.threshold.max = 500, use.fast.enrichment.routine = T) 
+    adjust.FDR.q.val = F, reverse.sign = F, preproc.type = 0, 
+    random.seed = NULL, perm.type = 0, fraction = 1, replace = F, 
+    gs.size.threshold.min = 5, gs.size.threshold.max = 500, use.fast.enrichment.routine = T, 
+    verbose = FALSE) 
 {
     if (.Platform$OS.type == "windows") {
         memory.limit(6e+09)
         memory.limit()
     }
-    set.seed(seed = random.seed, kind = NULL)
+    if (!is.null(random.seed)) {
+        set.seed(seed = random.seed, kind = NULL)
+    }
     adjust.param <- 0.5
     gc()
     time1 <- proc.time()
@@ -139,14 +145,11 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
             tmp2 <- rep(0, ncol(dataset))
             tmp2[which(CLS == tmp1[1])] <- 1
             tmp2[which(CLS == tmp1[2])] <- 0
-            print(tmp1)
-            print(tmp2)
             CLS <- list(phen = tmp1, class.v = tmp2)
         }
     }
     class.labels <- CLS$class.v
     class.phen <- CLS$phen
-    print(class.labels)
     if (reverse.sign == T) {
         phen1 <- class.phen[2]
         phen2 <- class.phen[1]
@@ -204,11 +207,13 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
     all.gene.descs <- gene.labels
     all.gene.symbols <- gene.labels
     all.gs.descs <- gs.desc
-    print(c("Number of genes:", N))
-    print(c("Number of Gene Sets:", Ng))
-    print(c("Number of samples:", Ns))
-    print(c("Original number of Gene Sets:", max.Ng))
-    print(c("Maximum gene set size:", max.size.G))
+    if (verbose) {
+        print(c("Number of genes:", N))
+        print(c("Number of Gene Sets:", Ng))
+        print(c("Number of samples:", Ns))
+        print(c("Original number of Gene Sets:", max.Ng))
+        print(c("Maximum gene set size:", max.size.G))
+    }
     all.gene.descs <- vector(length = N, mode = "character")
     all.gene.symbols <- vector(length = N, mode = "character")
     all.gs.descs <- vector(length = Ng, mode = "character")
@@ -295,8 +300,10 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
     }
     for (nk in 1:n.tot) {
         call.nperm <- n.perms[nk]
-        print(paste("Computing ranked list for actual and permuted phenotypes.......permutations: ", 
-            n.starts[nk], "--", n.ends[nk], sep = " "))
+        if (verbose) {
+            print(paste("Computing ranked list for actual and permuted phenotypes.......permutations: ", 
+                n.starts[nk], "--", n.ends[nk], sep = " "))
+        }
         O <- GSEA.GeneRanking(A, class.labels, gene.labels, call.nperm, 
             permutation.type = perm.type, sigma.correction = "GeneCluster", 
             fraction = fraction, replace = replace, reverse.sign = reverse.sign)
@@ -323,8 +330,10 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
     }
     gene.list2 <- obs.index
     for (i in 1:Ng) {
-        print(paste("Computing observed enrichment for gene set:", 
-            i, gs.names[i], sep = " "))
+        if (verbose) {
+            print(paste("Computing observed enrichment for gene set:", 
+                i, gs.names[i], sep = " "))
+        }
         gene.set <- gs[i, gs[i, ] != "null"]
         gene.set2 <- vector(length = length(gene.set), mode = "numeric")
         gene.set2 <- match(gene.set, gene.labels)
@@ -351,8 +360,10 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
     obs.phi <- matrix(nrow = Ng, ncol = nperm)
     if (reshuffling.type == "sample.labels") {
         for (i in 1:Ng) {
-            print(paste("Computing random permutations' enrichment for gene set:", 
-                i, gs.names[i], sep = " "))
+            if (verbose) {
+                print(paste("Computing random permutations' enrichment for gene set:", 
+                  i, gs.names[i], sep = " "))
+            }
             gene.set <- gs[i, gs[i, ] != "null"]
             gene.set2 <- vector(length = length(gene.set), mode = "numeric")
             gene.set2 <- match(gene.set, gene.labels)
@@ -461,7 +472,9 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
             gc()
         }
     }
-    print("Computing nominal p-values...")
+    if (verbose) {
+        print("Computing nominal p-values...")
+    }
     p.vals <- matrix(0, nrow = Ng, ncol = 2)
     for (i in 1:Ng) {
         pos.phi <- NULL
@@ -498,7 +511,9 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
         }
         return(abs(S))
     }
-    print("Computing rescaling normalization for each gene set null...")
+    if (verbose) {
+        print("Computing rescaling normalization for each gene set null...")
+    }
     for (i in 1:Ng) {
         pos.phi <- NULL
         neg.phi <- NULL
@@ -537,7 +552,9 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
             Obs.ES.norm[i] <- Obs.ES[i]/neg.m
         }
     }
-    print("Computing FWER p-values...")
+    if (verbose) {
+        print("Computing FWER p-values...")
+    }
     max.ES.vals.p <- NULL
     max.ES.vals.n <- NULL
     for (j in 1:nperm) {
@@ -569,7 +586,9 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
                 digits = 5)
         }
     }
-    print("Computing FDR q-values...")
+    if (verbose) {
+        print("Computing FDR q-values...")
+    }
     NES <- vector(length = Ng, mode = "numeric")
     phi.norm.mean <- vector(length = Ng, mode = "numeric")
     obs.phi.norm.mean <- vector(length = Ng, mode = "numeric")
@@ -709,6 +728,8 @@ function (dataset, ref = NULL, gsets, reshuffling.type = "sample.labels",
     phen2.rows <- length(Obs.ES.norm[Obs.ES.norm < 0])
     report.phen1 <- report2[1:phen1.rows, ]
     report.phen2 <- report3[1:phen2.rows, ]
+    rownames(report.phen1) <- as.vector(report.phen1[, 1])
+    rownames(report.phen2) <- as.vector(report.phen2[, 1])
     return(list(report1 = report.phen1, report2 = report.phen2))
   }
 }

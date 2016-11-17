@@ -1,10 +1,15 @@
 #Subsample analysis of pathways-based methods
-ssapbm <- function(data=NULL, pathways=NULL, ref=NULL, minp=2, maxp=9999,method= c("sumoftsq","ht2", "GSEA", "GAGE","GSA"), perm=T, sampling=c("sample.labels","gene.labels"),B=100, sample.size=NULL, steps=10, fdr=NULL,thr=.05,dc=T,rep=F,cr=NULL){
-	d <- processdata(data, pathways)
+ssapbm <- function(data=NULL, pathways=NULL, ref=NULL,target=NULL, minp=2, maxp=9999,method= c("sumoftsq","ht2", "GSEA", "GAGE","GSA"), perm=T, sampling=c("sample.labels","gene.labels"),B=100, sample.size=NULL, steps=10, fdr=NULL,thr=.05,dc=T,rep=F,cr=NULL){
+	if(is.null(target)){
+		cls2 <- c(1:ncol(data))[-ref]
+	}
+	else{
+		cls2 <- target
+	}
+	d <- .processdata(data, pathways)
 	data <- d[[1]]
 	pathways <- d[[2]]
 	cls1 <- ref
-	cls2 <- c(1:ncol(data))[-ref]
 	TP <- pvl <- fdr.tp <- NULL
 	if(is.null(fdr)){
 		fdr <- TRUE

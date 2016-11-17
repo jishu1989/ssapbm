@@ -1,6 +1,6 @@
 
 
-processdata <- function(data, pathways, min=5, max=500){
+.processdata <- function(data, pathways, min=5, max=500){
 	if(is.null(names(pathways))){
 		names(pathways) <- paste("pathways", c(1:length(pathways)), sep="")
 	}
